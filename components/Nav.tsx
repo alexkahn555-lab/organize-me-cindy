@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Button from './Button';
@@ -12,9 +12,11 @@ const serviceLinks = getServicesOrdered().map((s) => ({
   label: s.navTitle,
 }));
 
+// Services is intentionally absent here: there is no /services index page. It
+// is a disclosure that lists the four service pages, a dropdown on desktop and
+// an accordion on mobile, both fed by serviceLinks above.
 const primaryLinks = [
   { href: '/', label: 'Home' },
-  { href: '/services', label: 'Services' },
   { href: '/before-after', label: 'Our Work' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
@@ -31,6 +33,9 @@ export default function Nav() {
   const pathname = usePathname() ?? '/';
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  // The mobile accordion keeps its own open state so it never interferes with
+  // the desktop dropdown's servicesOpen.
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const servicesItemRef = useRef<HTMLLIElement>(null);
   const servicesTriggerRef = useRef<HTMLButtonElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -101,11 +106,18 @@ export default function Nav() {
     };
   }, [menuOpen]);
 
+  // Collapse the mobile Services accordion whenever the overlay closes, so it
+  // always reopens in its default collapsed state.
+  useEffect(() => {
+    if (!menuOpen) setMobileServicesOpen(false);
+  }, [menuOpen]);
+
   // Route change closes the overlay. Without this it survives navigation and the
   // visitor lands on the new page with the menu still covering it.
   useEffect(() => {
     setMenuOpen(false);
     setServicesOpen(false);
+    setMobileServicesOpen(false);
   }, [pathname]);
 
   return (
@@ -182,7 +194,9 @@ export default function Nav() {
                 ))}
               </ul>
             </li>
-            {primaryLinks.slice(2).map((l) => (
+            {/* Home is rendered above and Services is the dropdown, so the
+                remaining primary links start after Home. */}
+            {primaryLinks.slice(1).map((l) => (
               <li key={l.href}>
                 <NavLink href={l.href} current={isCurrent(pathname, l.href)}>
                   {l.label}
@@ -260,26 +274,87 @@ export default function Nav() {
         </div>
 
         <ul className="flex-1 overflow-y-auto px-6">
-          {primaryLinks.map((l) => {
+          {primaryLinks.map((l, i) => {
             const current = isCurrent(pathname, l.href);
             return (
-              <li key={l.href} className="border-b border-line">
-                <Link
-                  href={l.href}
-                  aria-current={current ? 'page' : undefined}
-                  className="block py-5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sage-deep"
-                >
-                  <span
-                    className={`font-display text-4xl text-ink ${
-                      current
-                        ? 'border-b-2 border-sage pb-1'
-                        : ''
-                    }`}
+              <Fragment key={l.href}>
+                <li className="border-b border-line">
+                  <Link
+                    href={l.href}
+                    aria-current={current ? 'page' : undefined}
+                    className="block py-5 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sage-deep"
                   >
-                    {l.label}
-                  </span>
-                </Link>
-              </li>
+                    <span
+                      className={`font-display text-4xl text-ink ${
+                        current ? 'border-b-2 border-sage pb-1' : ''
+                      }`}
+                    >
+                      {l.label}
+                    </span>
+                  </Link>
+                </li>
+
+                {/* Services sits between Home and Our Work as a tap-to-expand
+                    accordion listing the four service pages, mirroring the
+                    desktop dropdown. Its links carry the same smaller, indented
+                    treatment as any nested item. */}
+                {i === 0 && (
+                  <li className="border-b border-line">
+                    <button
+                      type="button"
+                      aria-expanded={mobileServicesOpen}
+                      aria-controls="mobile-services-menu"
+                      onClick={() => setMobileServicesOpen((v) => !v)}
+                      className="flex w-full items-center justify-between py-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sage-deep"
+                    >
+                      <span
+                        className={`font-display text-4xl text-ink ${
+                          isCurrent(pathname, '/services')
+                            ? 'border-b-2 border-sage pb-1'
+                            : ''
+                        }`}
+                      >
+                        Services
+                      </span>
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                        className={`h-7 w-7 shrink-0 text-ink transition-transform motion-reduce:transition-none ${
+                          mobileServicesOpen ? 'rotate-180' : ''
+                        }`}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m6 9 6 6 6-6"
+                        />
+                      </svg>
+                    </button>
+                    <ul
+                      id="mobile-services-menu"
+                      className={`pb-4 ${mobileServicesOpen ? 'block' : 'hidden'}`}
+                    >
+                      {serviceLinks.map((s) => {
+                        const serviceCurrent = isCurrent(pathname, s.href);
+                        return (
+                          <li key={s.href}>
+                            <Link
+                              href={s.href}
+                              aria-current={serviceCurrent ? 'page' : undefined}
+                              className="block py-3 pl-5 font-display text-2xl text-muted transition-colors hover:text-sage-deep focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sage-deep"
+                            >
+                              {s.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+                )}
+              </Fragment>
             );
           })}
         </ul>

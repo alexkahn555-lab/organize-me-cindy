@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { site } from '@/lib/site';
 
 const siteLinks = [
-  { href: '/services', label: 'Services' },
+  // No /services index page exists; point Services at the first service page.
+  { href: '/services/hoarding-estate-clearing', label: 'Services' },
   { href: '/before-after', label: 'Our Work' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
