@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #F7F4EE;
+  --surface: #EFEADF;
+  --ink: #2C2A26;
+  --muted: #5C5851;
+  --sage: #5E7461;
+  --sage-deep: #45584A;
+  --line: #DED7C8;
+  --error: #B4432E;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display), serif;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+  a { color: inherit; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  /* scroll-behavior is neither an animation nor a transition, so the rule above
+     does not reach it. Without this line a reduced-motion visitor still gets
+     smooth scrolling, which is the exact motion they asked not to see. */
+  html { scroll-behavior: auto !important; }
+}

@@ -1,0 +1,10 @@
+/* INTENTIONAL: this page has zero animation. Visitors arriving here are often
+   in a hard season, and a page that moves at them is the wrong greeting. Every
+   state change (link hover, button hover, focus) lands instantly. This kills
+   the transitions that ride in on shared components like Button, and it must
+   not be "fixed" back to animated. */
+.still,
+.still * {
+  transition: none !important;
+  animation: none !important;
+}

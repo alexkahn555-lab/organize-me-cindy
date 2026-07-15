@@ -1,0 +1,17 @@
+/* The page's one gesture: a short sage rule draws under "Cindy" in the
+   subheading on load, 400ms, once. The keyframe carries the from-state and
+   the element rests at full width, so the reduced-motion rule in globals.css
+   (animation: none) leaves the underline already drawn. */
+.draw {
+  animation: draw 400ms ease-out 150ms both;
+  transform-origin: left;
+}
+
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
